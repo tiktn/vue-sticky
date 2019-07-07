@@ -55,20 +55,24 @@ export default {
     let active = false
 
     const sticky = () => {
-      if (supportCSSSticky || active) return
+      if (active) return
+      el.classList.add('is-sticky')
+      active = true
+      if (supportCSSSticky) return
       if (!elStyle.height) {
         elStyle.height = `${el.offsetHeight}px`
       }
       if (childStyle) {
         childStyle.position = 'fixed'
       }
-      active = true
     }
 
     const reset = () => {
-      if (supportCSSSticky || !active) return
-      childStyle.position = 'static'
+      if (!active) return
+      el.classList.remove('is-sticky')
       active = false
+      if (supportCSSSticky) return
+      childStyle.position = 'static'
     }
 
     listenAction = throttle(() => {
@@ -82,7 +86,10 @@ export default {
     watch()
   },
 
-  unbind: unwatch,
+  unbind(el) {
+    el.classList.remove('is-sticky')
+    unwatch()
+  },
 
   update(el, binding) {
     bindingConfig = getBindingConfig(binding)
@@ -104,16 +111,16 @@ export default {
         childStyle.position = ''
         childStyle.top = ''
         childStyle.zIndex = initialConfig.zIndex
-        unwatch()
       }
+      el.classList.remove('is-sticky')
+      unwatch()
       return
     }
 
     if (supportCSSSticky) {
       el.style.position = '-webkit-sticky'
       el.style.position = 'sticky'
-    } else {
-      watch()
     }
+    watch()
   },
 }
